@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kondo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0b0c10;
+  --surface: #13141a;
+  --surface2: #1a1c25;
+  --surface3: #22253000;
+  --border: #272a36;
+  --text: #e8eaf0;
+  --text-dim: #6b7089;
+  --red: #ff3b30;
+  --red-bg: rgba(255,59,48,0.09);
+  --red-border: rgba(255,59,48,0.28);
+  --yellow: #ffd60a;
+  --yellow-bg: rgba(255,214,10,0.07);
+  --yellow-border: rgba(255,214,10,0.22);
+  --gray: #3a3f52;
+  --gray-bg: rgba(58,63,82,0.25);
+  --gray-border: rgba(58,63,82,0.45);
+  --green: #30d158;
+  --accent: #7c6af7;
+  --accent2: #a78bfa;
+  --streak: #ff9f0a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+/* ── HEADER ── */
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px; border-bottom: 1px solid var(--border);
+  background: var(--surface); position: sticky; top: 0; z-index: 100;
+  gap: 12px; flex-wrap: wrap;
+}
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; letter-spacing: -1px; display:flex; align-items:center; gap:8px; }
+.logo-k { color: var(--accent2); }
+.logo-rest { color: var(--text); }
+.streak-badge {
+  display:flex; align-items:center; gap:5px;
+  background: rgba(255,159,10,0.12); border: 1px solid rgba(255,159,10,0.3);
+  border-radius: 20px; padding: 4px 11px; font-size:0.78rem; font-weight:500; color: var(--streak);
+}
+.tabs { display: flex; gap: 5px; flex-wrap:wrap; }
+.tab-btn {
+  padding: 7px 16px; border-radius: 8px; border: none;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; background: transparent; color: var(--text-dim);
+}
+.tab-btn.active { background: var(--accent); color: #fff; }
+.tab-btn:hover:not(.active) { background: var(--surface2); color: var(--text); }
+.header-actions { display: flex; gap: 8px; flex-wrap:wrap; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #6b59e8; transform: translateY(-1px); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
+.btn-focus { background: rgba(255,214,10,0.12); color: var(--yellow); border: 1px solid rgba(255,214,10,0.3); }
+.btn-focus:hover { background: rgba(255,214,10,0.2); }
+.btn-random { background: rgba(255,59,48,0.1); color: var(--red); border: 1px solid rgba(255,59,48,0.25); font-size:0.78rem; }
+.btn-random:hover { background: rgba(255,59,48,0.18); }
+
+/* ── MAIN ── */
+.main { padding: 24px 28px; max-width: 1200px; margin: 0 auto; }
+
+/* ── STATS BAR ── */
+.stats-strip { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+.stat-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 13px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); font-size: 0.76rem;
+}
+.stat-chip .stat-num { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+.stat-chip .stat-lbl { color: var(--text-dim); }
+.stat-red .stat-num { color: var(--red); }
+.stat-yellow .stat-num { color: var(--yellow); }
+.stat-gray .stat-num { color: var(--text-dim); }
+.stat-green .stat-num { color: var(--green); }
+.stat-today { background: rgba(48,209,88,0.08); border-color: rgba(48,209,88,0.2); }
+.stat-today .stat-num { color: var(--green); }
+
+/* ── FILTER BAR ── */
+.filter-bar { display: flex; gap: 7px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+.filter-label { font-size: 0.75rem; color: var(--text-dim); margin-right: 2px; }
+.filter-chip {
+  padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-dim); font-size: 0.75rem;
+  cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+}
+.filter-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(124,106,247,0.1); }
+.filter-chip:hover:not(.active) { border-color: var(--text-dim); color: var(--text); }
+
+/* ── TOOLBAR (botones extra) ── */
+.toolbar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+.toolbar-right { margin-left: auto; }
+
+/* ── SECTION LABELS ── */
+.section-label {
+  font-family: 'Syne', sans-serif; font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim);
+  padding: 8px 0 4px; margin-top: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-count { font-size: 0.66rem; padding: 1px 7px; border-radius: 10px; background: var(--surface2); color: var(--text-dim); }
+
+/* ── BOARD ── */
+#board { display: flex; flex-direction: column; gap: 10px; }
+
+/* ── TASK CARD ── */
+.task-card {
+  border-radius: 12px; padding: 14px 18px;
+  display: flex; align-items: flex-start; gap: 12px;
+  border: 1px solid; transition: transform 0.2s, box-shadow 0.2s;
+  animation: slideIn 0.3s ease; cursor: default;
+}
+@keyframes slideIn { from { opacity:0; transform: translateY(-8px); } to { opacity:1; transform: translateY(0); } }
+.task-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.task-card.urgent { background: var(--red-bg); border-color: var(--red-border); }
+.task-card.important { background: var(--yellow-bg); border-color: var(--yellow-border); }
+.task-card.normal { background: var(--gray-bg); border-color: var(--gray-border); }
+
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,59,48,0.3); } 50% { box-shadow: 0 0 0 6px rgba(255,59,48,0); } }
+.task-card.urgent { animation: slideIn 0.3s ease, pulse 2.5s ease 0.5s infinite; }
+.task-card.urgent:hover { animation: none; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,59,48,0.2); }
+
+.priority-bar { width: 4px; min-height: 40px; border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+.urgent .priority-bar { background: var(--red); box-shadow: 0 0 12px rgba(255,59,48,0.5); }
+.important .priority-bar { background: var(--yellow); }
+.normal .priority-bar { background: var(--gray); }
+
+.task-content { flex: 1; min-width: 0; }
+.task-header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+.task-name { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.93rem; flex: 1; }
+.task-project-tag { font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; background: rgba(124,106,247,0.15); color: var(--accent2); border: 1px solid rgba(124,106,247,0.25); white-space: nowrap; flex-shrink: 0; }
+.task-desc { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 6px; line-height: 1.5; }
+
+/* ── SUBTAREAS ── */
+.subtasks-wrap { margin: 6px 0 8px; }
+.subtask-row { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+.subtask-check { width:16px; height:16px; border-radius:4px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; }
+.subtask-check.done-sub { background:var(--accent); border-color:var(--accent); }
+.subtask-check.done-sub::after { content:'✓'; font-size:10px; color:#fff; }
+.subtask-text { font-size:0.78rem; color:var(--text-dim); flex:1; }
+.subtask-text.done-sub { text-decoration: line-through; opacity:0.5; }
+.subtask-progress { height:3px; background:var(--border); border-radius:2px; margin:4px 0 6px; overflow:hidden; }
+.subtask-bar { height:100%; background:var(--accent); border-radius:2px; transition:width 0.3s ease; }
+
+/* ── TASK META ── */
+.task-meta { display: flex; align-items: center; gap: 12px; font-size: 0.73rem; flex-wrap: wrap; }
+.deadline { display: flex; align-items: center; gap: 5px; }
+.deadline-dot { width: 6px; height: 6px; border-radius: 50%; }
+.urgent .deadline-dot { background: var(--red); }
+.important .deadline-dot { background: var(--yellow); }
+.normal .deadline-dot { background: var(--gray); }
+.deadline-text { color: var(--text-dim); }
+.time-left { font-weight: 500; }
+.urgent .time-left { color: var(--red); }
+.important .time-left { color: var(--yellow); }
+.normal .time-left { color: var(--text-dim); }
+.est-time { color: var(--text-dim); display:flex; align-items:center; gap:4px; }
+.est-time span { color:var(--accent2); font-weight:500; }
+
+/* ── TASK ACTIONS ── */
+.task-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.action-btn {
+  width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text-dim); font-size: 0.8rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.action-btn:hover { background: var(--border); color: var(--text); }
+.complete-btn {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid;
+  background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0; font-size:0.85rem;
+}
+.urgent .complete-btn { border-color: var(--red); color: var(--red); }
+.important .complete-btn { border-color: var(--yellow); color: var(--yellow); }
+.normal .complete-btn { border-color: var(--gray); color: var(--gray); }
+.complete-btn:hover { transform: scale(1.15); }
+.urgent .complete-btn:hover { background: rgba(255,59,48,0.15); }
+.important .complete-btn:hover { background: rgba(255,214,10,0.1); }
+.normal .complete-btn:hover { background: rgba(58,63,82,0.3); }
+
+/* ── HISTORY TAB ── */
+#tab-history { display: none; }
+.history-header { font-family:'Syne',sans-serif; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-dim); margin-bottom:14px; }
+.history-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px; margin-bottom: 8px;
+  animation: slideIn 0.3s ease; display: flex; gap: 12px; align-items: flex-start;
+}
+.check-icon { color: var(--green); font-size: 1.1rem; margin-top: 2px; }
+.history-name { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.88rem; margin-bottom: 3px; }
+.history-meta { font-size: 0.75rem; color: var(--text-dim); display: flex; gap: 12px; flex-wrap: wrap; }
+.history-note { font-size: 0.78rem; color: var(--text-dim); margin-top: 5px; font-style: italic; }
+.history-achievement { display:inline-flex; align-items:center; gap:4px; margin-top:5px; font-size:0.72rem; background:rgba(124,106,247,0.1); border:1px solid rgba(124,106,247,0.2); border-radius:8px; padding:2px 8px; color:var(--accent2); }
+
+/* ── GALERÍA DE LOGROS ── */
+#tab-gallery { display: none; }
+.gallery-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap:14px; margin-top:8px; }
+.trophy-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 12px; text-align:center;
+  animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.trophy-card:hover { transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,0.4); }
+@keyframes popIn { from { opacity:0; transform:scale(0.7); } to { opacity:1; transform:scale(1); } }
+.trophy-emoji { font-size:2.4rem; display:block; margin-bottom:8px; }
+.trophy-name { font-family:'Syne',sans-serif; font-weight:700; font-size:0.72rem; color:var(--accent2); margin-bottom:4px; }
+.trophy-task { font-size:0.68rem; color:var(--text-dim); line-height:1.3; }
+.trophy-count { font-size:0.65rem; margin-top:4px; color:var(--text-dim); }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+.empty-icon { font-size: 2.4rem; margin-bottom: 12px; }
+.empty-title { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+.empty-desc { font-size: 0.8rem; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; backdrop-filter: blur(5px);
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 26px; width: 100%; max-width: 500px;
+  max-height: 90vh; overflow-y: auto; animation: scaleIn 0.2s ease;
+}
+@keyframes scaleIn { from { transform:scale(0.95); opacity:0; } to { transform:scale(1); opacity:1; } }
+.modal-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 18px; }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 5px; display: block; font-weight: 500; }
+.form-input, .form-textarea, .form-select {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 12px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.86rem;
+  outline: none; transition: border-color 0.2s;
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+.form-textarea { resize: vertical; min-height: 72px; }
+.form-select option { background: var(--surface2); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+.complete-modal-task { background: var(--surface2); border-radius: 8px; padding: 11px 13px; margin-bottom: 18px; border-left: 3px solid var(--green); }
+.complete-modal-task-name { font-weight: 600; font-size: 0.88rem; }
+
+/* ── SUBTASK INPUT LIST ── */
+.subtask-input-row { display:flex; gap:6px; margin-bottom:6px; }
+.subtask-input-row input { flex:1; }
+.btn-icon { width:30px; height:30px; padding:0; border-radius:6px; font-size:1rem; display:flex; align-items:center; justify-content:center; }
+
+/* ── MODO FOCO ── */
+#focus-overlay {
+  position:fixed; inset:0; background:rgba(7,8,12,0.97);
+  z-index:500; display:none; flex-direction:column; align-items:center; justify-content:center;
+  animation: fadeIn 0.3s ease;
+}
+.focus-label { font-family:'Syne',sans-serif; font-size:0.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); margin-bottom:20px; }
+.focus-card {
+  background: var(--surface); border: 1px solid var(--red-border);
+  border-radius: 20px; padding: 36px 40px; max-width: 480px; width:90%;
+  box-shadow: 0 0 60px rgba(255,59,48,0.12); text-align:center;
+  animation: scaleIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+.focus-priority-dot { width:14px; height:14px; border-radius:50%; background:var(--red); box-shadow:0 0 16px rgba(255,59,48,0.6); margin:0 auto 16px; }
+.focus-task-name { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; margin-bottom:12px; line-height:1.2; }
+.focus-desc { color:var(--text-dim); font-size:0.88rem; line-height:1.6; margin-bottom:16px; }
+.focus-deadline { color:var(--red); font-size:0.82rem; font-weight:500; margin-bottom:8px; }
+.focus-est { color:var(--text-dim); font-size:0.78rem; margin-bottom:24px; }
+.focus-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.focus-subtasks { text-align:left; margin:12px 0 16px; }
+.focus-subtasks .subtask-row { justify-content:flex-start; }
+
+/* ── CELEBRACIÓN ── */
+#celebration-overlay {
+  position:fixed; inset:0; z-index:2000; display:none; flex-direction:column; align-items:center; justify-content:center;
+  pointer-events:none;
+}
+.confetti-container { position:absolute; inset:0; overflow:hidden; }
+.confetti-piece { position:absolute; width:8px; height:8px; border-radius:2px; animation: confettiFall linear forwards; }
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity:1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity:0; }
+}
+.achievement-popup {
+  background: var(--surface); border: 1px solid var(--accent);
+  border-radius: 20px; padding: 30px 40px; text-align:center; pointer-events:all;
+  box-shadow: 0 0 60px rgba(124,106,247,0.3);
+  animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
+  max-width: 340px; width:90%; z-index:1;
+}
+.ach-emoji { font-size:3.5rem; margin-bottom:10px; display:block; }
+.ach-unlock { font-size:0.7rem; letter-spacing:2px; color:var(--accent2); font-weight:700; text-transform:uppercase; margin-bottom:6px; }
+.ach-name { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; color:var(--text); margin-bottom:6px; }
+.ach-task { font-size:0.82rem; color:var(--text-dim); margin-bottom:18px; line-height:1.4; }
+.ach-close { cursor:pointer; pointer-events:all; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius:3px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width:600px) {
+  header { padding:12px 14px; }
+  .main { padding:16px 14px; }
+  .logo { font-size:1.1rem; }
+  .tab-btn { padding:6px 10px; font-size:0.76rem; }
+  .focus-card { padding:26px 22px; }
+  .focus-task-name { font-size:1.3rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="logo"><span class="logo-k">Kon</span><span class="logo-rest">do</span></div>
+    <div class="streak-badge" id="streak-badge">🔥 <span id="streak-count">0</span> días</div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('board')">📋 Tablero</button>
+    <button class="tab-btn" onclick="switchTab('history')">✅ Historial</button>
+    <button class="tab-btn" onclick="switchTab('gallery')">🏆 Logros</button>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-focus" onclick="enterFocusMode()">🎯 Foco</button>
+    <button class="btn btn-secondary" onclick="openProjectModal()">＋ Proyecto</button>
+    <button class="btn btn-primary" onclick="openTaskModal()">＋ Tarea</button>
+  </div>
+</header>
+
+<div class="main">
+  <!-- BOARD TAB -->
+  <div id="tab-board">
+    <div class="stats-strip" id="stats-strip"></div>
+    <div class="toolbar">
+      <button class="btn btn-random" onclick="pickRandom()">🎲 ¿Por dónde empiezo?</button>
+    </div>
+    <div class="filter-bar" id="filter-bar"><span class="filter-label">Proyecto:</span></div>
+    <div id="board"></div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="tab-history">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="exportData()" style="font-size:0.78rem">⬇️ Exportar datos</button>
+      <label class="btn btn-secondary" style="font-size:0.78rem;cursor:pointer">⬆️ Importar datos<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- GALLERY TAB -->
+  <div id="tab-gallery">
+    <div id="gallery-content"></div>
+  </div>
+</div>
+
+<!-- MODO FOCO -->
+<div id="focus-overlay">
+  <div class="focus-label">✦ modo foco ✦</div>
+  <div class="focus-card" id="focus-card">
+    <div class="focus-priority-dot" id="focus-dot"></div>
+    <div class="focus-task-name" id="focus-name"></div>
+    <div class="focus-desc" id="focus-desc"></div>
+    <div class="focus-deadline" id="focus-deadline"></div>
+    <div class="focus-est" id="focus-est"></div>
+    <div class="focus-subtasks" id="focus-subtasks"></div>
+    <div class="focus-actions">
+      <button class="btn btn-primary" onclick="focusComplete()">✓ Completar</button>
+      <button class="btn btn-secondary" onclick="closeFocus()">Salir del foco</button>
+    </div>
+  </div>
+</div>
+
+<!-- CELEBRACIÓN -->
+<div id="celebration-overlay">
+  <div class="confetti-container" id="confetti-container"></div>
+  <div class="achievement-popup" id="achievement-popup">
+    <span class="ach-emoji" id="ach-emoji">⭐</span>
+    <div class="ach-unlock">¡Logro desbloqueado!</div>
+    <div class="ach-name" id="ach-name">Nombre del logro</div>
+    <div class="ach-task" id="ach-task">Completaste: </div>
+    <button class="btn btn-primary ach-close" onclick="closeCelebration()">¡Genial! 🎉</button>
+  </div>
+</div>
+
+<!-- TASK MODAL -->
+<div class="modal-overlay" id="task-modal" style="display:none" onclick="closeOnOverlay(event,'task-modal')">
+  <div class="modal">
+    <div class="modal-title" id="task-modal-title">Nueva Tarea</div>
+    <div class="form-group">
+      <label class="form-label">Nombre de la tarea *</label>
+      <input class="form-input" id="t-name" placeholder="Ej: Preparar presentación" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descripción</label>
+      <textarea class="form-textarea" id="t-desc" placeholder="Detalles de la tarea..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha límite *</label>
+      <input class="form-input" id="t-deadline" type="datetime-local" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">⏱ Estimación de tiempo</label>
+      <select class="form-select" id="t-estimate">
+        <option value="">— Sin estimar —</option>
+        <option value="15 min">15 minutos</option>
+        <option value="30 min">30 minutos</option>
+        <option value="1 hora">1 hora</option>
+        <option value="2 horas">2 horas</option>
+        <option value="4 horas">4 horas</option>
+        <option value="1 día">1 día completo</option>
+        <option value="varios días">Varios días</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Proyecto (opcional)</label>
+      <select class="form-select" id="t-project">
+        <option value="">— Sin proyecto —</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Subtareas (opcional)</label>
+      <div id="subtask-inputs"></div>
+      <button class="btn btn-secondary" style="font-size:0.78rem;padding:5px 12px;margin-top:4px" onclick="addSubtaskInput()">＋ Agregar subtarea</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('task-modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTask()">Guardar tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECT MODAL -->
+<div class="modal-overlay" id="project-modal" style="display:none" onclick="closeOnOverlay(event,'project-modal')">
+  <div class="modal">
+    <div class="modal-title">Nuevo Proyecto</div>
+    <div class="form-group">
+      <label class="form-label">Nombre del proyecto *</label>
+      <input class="form-input" id="p-name" placeholder="Ej: Lanzamiento web" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('project-modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProject()">Crear proyecto</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPLETE MODAL -->
+<div class="modal-overlay" id="complete-modal" style="display:none" onclick="closeOnOverlay(event,'complete-modal')">
+  <div class="modal">
+    <div class="modal-title">✅ Marcar como completada</div>
+    <div class="complete-modal-task">
+      <div class="complete-modal-task-name" id="cm-task-name"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha y hora de completado *</label>
+      <input class="form-input" id="cm-datetime" type="datetime-local" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notas (opcional)</label>
+      <textarea class="form-textarea" id="cm-notes" placeholder="¿Cómo fue? ¿Algún aprendizaje?"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('complete-modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmComplete()" style="background:var(--green)">Confirmar ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── LOGROS KAWAII ────────────────────────────────────────────────────────────
+const ACHIEVEMENTS = [
+  { emoji:'🐣', name:'Pollito Valiente', desc:'Primera tarea completada. ¡El viaje empieza así!' },
+  { emoji:'🐢', name:'Paso a Paso', desc:'Constancia es poder. Vas a tu ritmo.' },
+  { emoji:'🦋', name:'Metamorfosis', desc:'Transformaste caos en calma.' },
+  { emoji:'🌸', name:'Hanami', desc:'Floreciste en medio del trabajo.' },
+  { emoji:'🐉', name:'Ryūsei', desc:'Velocidad y fuego al completar lo urgente.' },
+  { emoji:'🦊', name:'Kitsune Listo', desc:'Astucia para terminar lo difícil.' },
+  { emoji:'🌙', name:'Tsuki', desc:'Trabajaste hasta la luna y lo lograste.' },
+  { emoji:'⚡', name:'Raijin', desc:'¡Rayo de productividad!' },
+  { emoji:'🐉', name:'Dragón Zen', desc:'Poder + calma = tú.' },
+  { emoji:'🌊', name:'Nami', desc:'Fluiste con las tareas como el agua.' },
+  { emoji:'🎏', name:'Koinobori', desc:'Nadaste contracorriente y ganaste.' },
+  { emoji:'🍡', name:'Dango Dulce', desc:'Recompensa merecida por tu dulce esfuerzo.' },
+  { emoji:'🐼', name:'Panda Guerrero', desc:'Ternura y determinación.' },
+  { emoji:'🦄', name:'Kirin Mágico', desc:'Lograste algo que parecía imposible.' },
+  { emoji:'🌟', name:'Hoshi', desc:'Brillas con luz propia.' },
+  { emoji:'🎯', name:'Archer Zen', desc:'Enfoque perfecto.' },
+  { emoji:'🐸', name:'Kaeru Tenaz', desc:'Saltaste todos los obstáculos.' },
+  { emoji:'🍀', name:'Clover Shiro', desc:'La suerte la hiciste tú.' },
+  { emoji:'🏔', name:'Fuji', desc:'Cima alcanzada, vista despejada.' },
+  { emoji:'🧿', name:'Omamori', desc:'Te protegiste de la procrastinación.' },
+  { emoji:'🐠', name:'Nemo Libre', desc:'¡Escapaste de la lista de pendientes!' },
+  { emoji:'🌈', name:'Niji', desc:'Después del caos, tu arcoiris.' },
+  { emoji:'🎐', name:'Furin', desc:'Ligereza al terminar una tarea pesada.' },
+  { emoji:'🦋', name:'Cho Kawaii', desc:'¡Completaste 5 tareas! Absolutamente hermoso.' },
+  { emoji:'👺', name:'Oni Domado', desc:'Le ganaste a lo urgente.' },
+  { emoji:'🐯', name:'Tora Feroz', desc:'Sin miedo ante el deadline.' },
+  { emoji:'🌺', name:'Ume Temprana', desc:'Terminaste antes del límite.' },
+  { emoji:'🎋', name:'Take Fuerte', desc:'Firme como el bambú bajo presión.' },
+  { emoji:'🔮', name:'Tama Mágica', desc:'Predijiste que podías, y tenías razón.' },
+  { emoji:'🦅', name:'Washi Libre', desc:'Volaste por encima de las tareas.' },
+];
+
+// ─── STATE (namespaced to avoid browser global collisions) ────────────────────
+const K = {
+  tasks:         JSON.parse(localStorage.getItem('kondo_tasks')    || '[]'),
+  projects:      JSON.parse(localStorage.getItem('kondo_projects') || '[]'),
+  done:          JSON.parse(localStorage.getItem('kondo_history')  || '[]'),
+  trophies:      JSON.parse(localStorage.getItem('kondo_trophies') || '[]'),
+  streak:        JSON.parse(localStorage.getItem('kondo_streak')   || '{"days":0,"lastDate":""}'),
+  editingTaskId:    null,
+  completingTaskId: null,
+  filterProject:    'all',
+  focusTaskId:      null,
+};
+
+// Aliases for brevity (no global name collisions)
+function getTasks()    { return K.tasks; }
+function getProjects() { return K.projects; }
+function getDone()     { return K.done; }
+function getTrophies() { return K.trophies; }
+
+function save() {
+  localStorage.setItem('kondo_tasks',    JSON.stringify(K.tasks));
+  localStorage.setItem('kondo_projects', JSON.stringify(K.projects));
+  localStorage.setItem('kondo_history',  JSON.stringify(K.done));
+  localStorage.setItem('kondo_trophies', JSON.stringify(K.trophies));
+  localStorage.setItem('kondo_streak',   JSON.stringify(K.streak));
+}
+
+// Legacy shims so existing code keeps working
+Object.defineProperty(window, 'tasks',         { get: ()=>K.tasks,    set: v=>{ K.tasks=v; }});
+Object.defineProperty(window, 'projects',      { get: ()=>K.projects, set: v=>{ K.projects=v; }});
+Object.defineProperty(window, 'completedTasks',{ get: ()=>K.done,     set: v=>{ K.done=v; }});
+Object.defineProperty(window, 'trophies',      { get: ()=>K.trophies, set: v=>{ K.trophies=v; }});
+Object.defineProperty(window, 'streakData',    { get: ()=>K.streak,   set: v=>{ K.streak=v; }});
+Object.defineProperty(window, 'editingTaskId', { get: ()=>K.editingTaskId,    set: v=>{ K.editingTaskId=v; }});
+Object.defineProperty(window, 'completingTaskId',{ get: ()=>K.completingTaskId, set: v=>{ K.completingTaskId=v; }});
+Object.defineProperty(window, 'filterProject', { get: ()=>K.filterProject,    set: v=>{ K.filterProject=v; }});
+Object.defineProperty(window, 'focusTaskId',   { get: ()=>K.focusTaskId,      set: v=>{ K.focusTaskId=v; }});
+
+// ─── STREAK ───────────────────────────────────────────────────────────────────
+function updateStreak() {
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (streakData.lastDate === today) return;
+  if (streakData.lastDate === yesterday) {
+    streakData.days++;
+  } else if (streakData.lastDate !== today) {
+    streakData.days = 1;
+  }
+  streakData.lastDate = today;
+  save();
+  renderStreak();
+}
+
+function renderStreak() {
+  document.getElementById('streak-count').textContent = streakData.days;
+}
+
+// ─── PRIORITY ────────────────────────────────────────────────────────────────
+function getPriority(deadline) {
+  const now = new Date(), dl = new Date(deadline);
+  const diffH = (dl - now) / 3600000;
+  if (diffH < 0) return 'urgent';
+  if (diffH <= 48) return 'urgent';
+  if (diffH <= 168) return 'important';
+  return 'normal';
+}
+function timeLeft(deadline) {
+  const diff = new Date(deadline) - new Date();
+  if (diff < 0) return 'Vencida';
+  const h = Math.floor(diff / 3600000);
+  if (h < 24) return `${h}h restantes`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d restantes`;
+  return `${Math.floor(d/7)} sem restantes`;
+}
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+// ─── TABS ────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  ['board','history','gallery'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = (t===tab) ? '' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['board','history','gallery'][i] === tab);
+  });
+  if (tab==='history') renderHistory();
+  if (tab==='board') renderBoard();
+  if (tab==='gallery') renderGallery();
+}
+
+// ─── RENDER BOARD ────────────────────────────────────────────────────────────
+function renderBoard() {
+  const board = document.getElementById('board');
+  const activeTasks = tasks.filter(t => !t.done);
+  let filtered = filterProject==='all' ? activeTasks : activeTasks.filter(t => t.projectId === filterProject);
+  const order = { urgent:0, important:1, normal:2 };
+  filtered.sort((a,b) => {
+    const pa=getPriority(a.deadline), pb=getPriority(b.deadline);
+    if (order[pa]!==order[pb]) return order[pa]-order[pb];
+    return new Date(a.deadline)-new Date(b.deadline);
+  });
+
+  // Stats
+  const urgent   = activeTasks.filter(t=>getPriority(t.deadline)==='urgent').length;
+  const important= activeTasks.filter(t=>getPriority(t.deadline)==='important').length;
+  const normal   = activeTasks.filter(t=>getPriority(t.deadline)==='normal').length;
+  const todayStr = new Date().toDateString();
+  const yesterdayStr = new Date(Date.now()-86400000).toDateString();
+  const today    = K.done.filter(h=>new Date(h.completedAt).toDateString()===todayStr).length;
+  const yesterday= K.done.filter(h=>new Date(h.completedAt).toDateString()===yesterdayStr).length;
+  document.getElementById('stats-strip').innerHTML = `
+    <div class="stat-chip stat-red"><span class="stat-num">${urgent}</span><span class="stat-lbl">Urgentes</span></div>
+    <div class="stat-chip stat-yellow"><span class="stat-num">${important}</span><span class="stat-lbl">Importantes</span></div>
+    <div class="stat-chip stat-gray"><span class="stat-num">${normal}</span><span class="stat-lbl">Pueden esperar</span></div>
+    <div class="stat-chip stat-today" title="Completadas hoy vs ayer"><span class="stat-num">${today}</span><span class="stat-lbl">hoy</span></div>
+    <div class="stat-chip stat-green"><span class="stat-num">${yesterday}</span><span class="stat-lbl">ayer</span></div>
+  `;
+
+  // Filter chips
+  const fb = document.getElementById('filter-bar');
+  fb.innerHTML = `<span class="filter-label">Proyecto:</span>
+    <button class="filter-chip ${filterProject==='all'?'active':''}" onclick="setFilter('all')">Todos</button>
+    ${projects.map(p=>`<button class="filter-chip ${filterProject===p.id?'active':''}" onclick="setFilter('${p.id}')">${escHtml(p.name)}</button>`).join('')}`;
+
+  if (filtered.length===0) {
+    board.innerHTML = `<div class="empty-state"><div class="empty-icon">🎯</div><div class="empty-title">Sin tareas pendientes</div><div class="empty-desc">Añadí una nueva tarea con el botón "＋ Tarea"</div></div>`;
+    return;
+  }
+
+  const groups = [
+    { key:'urgent',    label:'Urgente',       items: filtered.filter(t=>getPriority(t.deadline)==='urgent') },
+    { key:'important', label:'Importante',    items: filtered.filter(t=>getPriority(t.deadline)==='important') },
+    { key:'normal',    label:'Puede esperar', items: filtered.filter(t=>getPriority(t.deadline)==='normal') },
+  ];
+
+  board.innerHTML = groups.filter(g=>g.items.length>0).map(g=>`
+    <div class="section-label">
+      ${g.key==='urgent'?'🔴':g.key==='important'?'🟡':'⚫'} ${g.label} <span class="section-count">${g.items.length}</span>
+    </div>
+    ${g.items.map(t=>taskCard(t,g.key)).join('')}
+  `).join('');
+}
+
+function taskCard(t, priority) {
+  const proj = projects.find(p=>p.id===t.projectId);
+  const subs = t.subtasks || [];
+  const doneSubs = subs.filter(s=>s.done).length;
+  const subsHtml = subs.length ? `
+    <div class="subtasks-wrap">
+      ${subs.length>1 ? `<div class="subtask-progress"><div class="subtask-bar" style="width:${Math.round(doneSubs/subs.length*100)}%"></div></div>` : ''}
+      ${subs.map((s,i)=>`
+        <div class="subtask-row">
+          <div class="subtask-check ${s.done?'done-sub':''}" onclick="toggleSubtask('${t.id}',${i})"></div>
+          <span class="subtask-text ${s.done?'done-sub':''}">${escHtml(s.text)}</span>
+        </div>`).join('')}
+    </div>` : '';
+  return `
+  <div class="task-card ${priority}" id="card-${t.id}">
+    <div class="priority-bar"></div>
+    <div class="task-content">
+      <div class="task-header">
+        <div class="task-name">${escHtml(t.name)}</div>
+        ${proj?`<span class="task-project-tag">${escHtml(proj.name)}</span>`:''}
+      </div>
+      ${t.desc?`<div class="task-desc">${escHtml(t.desc)}</div>`:''}
+      ${subsHtml}
+      <div class="task-meta">
+        <div class="deadline"><div class="deadline-dot"></div><span class="deadline-text">${fmtDate(t.deadline)}</span></div>
+        <span class="time-left">${timeLeft(t.deadline)}</span>
+        ${t.estimate?`<span class="est-time">⏱ <span>${escHtml(t.estimate)}</span></span>`:''}
+      </div>
+    </div>
+    <div class="task-actions">
+      <button class="action-btn" title="Editar" onclick="openEditTask('${t.id}')">✏️</button>
+      <button class="action-btn" title="Eliminar" onclick="deleteTask('${t.id}')">🗑️</button>
+      <button class="complete-btn" title="Completar" onclick="openCompleteModal('${t.id}')">✓</button>
+    </div>
+  </div>`;
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function setFilter(id) { filterProject=id; renderBoard(); }
+
+// ─── SUBTASKS TOGGLE ─────────────────────────────────────────────────────────
+function toggleSubtask(taskId, idx) {
+  const t = tasks.find(x=>x.id===taskId);
+  if (!t||!t.subtasks) return;
+  t.subtasks[idx].done = !t.subtasks[idx].done;
+  save(); renderBoard();
+  if (focusTaskId===taskId) renderFocusCard(t);
+}
+
+// ─── RENDER HISTORY ──────────────────────────────────────────────────────────
+function renderHistory() {
+  const hl = document.getElementById('history-list');
+  if (K.done.length===0) {
+    hl.innerHTML=`<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-title">Historial vacío</div><div class="empty-desc">Las tareas completadas aparecerán aquí.</div></div>`;
+    return;
+  }
+  const sorted = [...K.done].reverse();
+  hl.innerHTML = sorted.map(h=>{
+    const proj = K.projects.find(p=>p.id===h.projectId);
+    const trophy = K.trophies.find(tr=>tr.historyId===h.id);
+    return `<div class="history-card">
+      <div class="check-icon">✅</div>
+      <div style="flex:1">
+        <div class="history-name">${escHtml(h.name)}</div>
+        <div class="history-meta">
+          ${proj?`<span>📁 ${escHtml(proj.name)}</span>`:''}
+          <span>🗓 Límite: ${fmtDate(h.deadline)}</span>
+          <span>✔ Completada: ${fmtDate(h.completedAt)}</span>
+          ${h.estimate?`<span>⏱ ${escHtml(h.estimate)}</span>`:''}
+        </div>
+        ${h.notes?`<div class="history-note">💬 ${escHtml(h.notes)}</div>`:''}
+        ${trophy?`<div class="history-achievement">${trophy.emoji} ${escHtml(trophy.name)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── RENDER GALLERY ──────────────────────────────────────────────────────────
+function renderGallery() {
+  const gc = document.getElementById('gallery-content');
+  if (K.trophies.length===0) {
+    gc.innerHTML=`<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-title">Galería vacía</div><div class="empty-desc">¡Completá tareas para desbloquear personajes kawaii!</div></div>`;
+    return;
+  }
+  const counts = {};
+  K.trophies.forEach(tr=>{ counts[tr.name]=(counts[tr.name]||0)+1; });
+  const unique = [];
+  const seen = new Set();
+  K.trophies.forEach(tr=>{ if(!seen.has(tr.name)){ seen.add(tr.name); unique.push({...tr,count:counts[tr.name]}); } });
+
+  gc.innerHTML = `<div class="history-header">🏆 GALERÍA DE LOGROS · ${K.trophies.length} obtenidos</div>
+  <div class="gallery-grid">${unique.map(tr=>`
+    <div class="trophy-card">
+      <span class="trophy-emoji">${tr.emoji}</span>
+      <div class="trophy-name">${escHtml(tr.name)}</div>
+      <div class="trophy-task">${escHtml(tr.desc)}</div>
+      ${tr.count>1?`<div class="trophy-count">×${tr.count}</div>`:''}
+    </div>`).join('')}
+  </div>`;
+}
+
+// ─── TASK CRUD ───────────────────────────────────────────────────────────────
+function openTaskModal() {
+  editingTaskId = null;
+  document.getElementById('task-modal-title').textContent = 'Nueva Tarea';
+  document.getElementById('t-name').value = '';
+  document.getElementById('t-desc').value = '';
+  document.getElementById('t-deadline').value = '';
+  document.getElementById('t-estimate').value = '';
+  document.getElementById('subtask-inputs').innerHTML = '';
+  populateProjectSelect();
+  document.getElementById('task-modal').style.display = 'flex';
+  setTimeout(()=>document.getElementById('t-name').focus(),100);
+}
+
+function openEditTask(id) {
+  const t = tasks.find(x=>x.id===id);
+  if (!t) return;
+  editingTaskId = id;
+  document.getElementById('task-modal-title').textContent = 'Editar Tarea';
+  document.getElementById('t-name').value = t.name;
+  document.getElementById('t-desc').value = t.desc||'';
+  document.getElementById('t-deadline').value = t.deadline?t.deadline.slice(0,16):'';
+  document.getElementById('t-estimate').value = t.estimate||'';
+  const si = document.getElementById('subtask-inputs');
+  si.innerHTML='';
+  (t.subtasks||[]).forEach(s=>addSubtaskInput(s.text));
+  populateProjectSelect(t.projectId);
+  document.getElementById('task-modal').style.display = 'flex';
+}
+
+function addSubtaskInput(val='') {
+  const si = document.getElementById('subtask-inputs');
+  const row = document.createElement('div');
+  row.className='subtask-input-row';
+  row.innerHTML=`<input class="form-input" placeholder="Paso chico..." value="${escHtml(val)}" /><button class="btn btn-secondary btn-icon" onclick="this.parentElement.remove()">✕</button>`;
+  si.appendChild(row);
+}
+
+function saveTask() {
+  const name = document.getElementById('t-name').value.trim();
+  const deadline = document.getElementById('t-deadline').value;
+  if (!name||!deadline) { alert('Por favor completá el nombre y la fecha límite.'); return; }
+  const subs = [...document.querySelectorAll('#subtask-inputs input')]
+    .map(i=>i.value.trim()).filter(Boolean)
+    .map(text=>({ text, done:false }));
+  const estimate = document.getElementById('t-estimate').value;
+  if (editingTaskId) {
+    const t = tasks.find(x=>x.id===editingTaskId);
+    t.name=name; t.desc=document.getElementById('t-desc').value.trim();
+    t.deadline=deadline; t.projectId=document.getElementById('t-project').value||null;
+    t.estimate=estimate;
+    // Preserve done status of existing subtasks
+    const old = t.subtasks||[];
+    t.subtasks = subs.map((s,i)=>({ text:s.text, done: old[i]?old[i].done:false }));
+  } else {
+    tasks.push({ id:Date.now().toString(), name, desc:document.getElementById('t-desc').value.trim(), deadline, projectId:document.getElementById('t-project').value||null, done:false, estimate, subtasks:subs });
+  }
+  save(); closeModal('task-modal'); renderBoard();
+}
+
+function deleteTask(id) {
+  if (!confirm('¿Eliminar esta tarea?')) return;
+  tasks = tasks.filter(t=>t.id!==id);
+  save(); renderBoard();
+}
+
+// ─── PROJECT CRUD ─────────────────────────────────────────────────────────────
+function openProjectModal() {
+  document.getElementById('p-name').value='';
+  document.getElementById('project-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('p-name').focus(),100);
+}
+function saveProject() {
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) { alert('Ingresá un nombre para el proyecto.'); return; }
+  projects.push({ id:Date.now().toString(), name });
+  save(); closeModal('project-modal'); renderBoard();
+}
+function populateProjectSelect(selected='') {
+  const sel = document.getElementById('t-project');
+  sel.innerHTML = '<option value="">— Sin proyecto —</option>' +
+    projects.map(p=>`<option value="${p.id}" ${p.id===selected?'selected':''}>${escHtml(p.name)}</option>`).join('');
+}
+
+// ─── COMPLETE ─────────────────────────────────────────────────────────────────
+function openCompleteModal(id) {
+  completingTaskId = id;
+  const t = tasks.find(x=>x.id===id);
+  document.getElementById('cm-task-name').textContent = t.name;
+  const now = new Date();
+  document.getElementById('cm-datetime').value = new Date(now - now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('cm-notes').value = '';
+  document.getElementById('complete-modal').style.display = 'flex';
+}
+
+function confirmComplete() {
+  const dt = document.getElementById('cm-datetime').value;
+  if (!dt) { alert('Ingresá la fecha y hora de completado.'); return; }
+  const t = K.tasks.find(x=>x.id===K.completingTaskId);
+  if (!t) { alert('No se encontró la tarea.'); return; }
+
+  const histId = Date.now().toString();
+  const entry = { id:histId, name:t.name, desc:t.desc, deadline:t.deadline, projectId:t.projectId, completedAt:dt, notes:document.getElementById('cm-notes').value.trim(), estimate:t.estimate||'' };
+  K.done.push(entry);
+  K.tasks = K.tasks.filter(x=>x.id!==K.completingTaskId);
+
+  const ach = ACHIEVEMENTS[Math.floor(Math.random()*ACHIEVEMENTS.length)];
+  K.trophies.push({ ...ach, historyId:histId, earnedAt:dt });
+
+  updateStreak();
+  save();
+  closeModal('complete-modal');
+  if (K.focusTaskId===K.completingTaskId) closeFocus();
+  renderBoard();
+  showCelebration(ach, t.name);
+}
+
+// ─── CELEBRACIÓN ─────────────────────────────────────────────────────────────
+function showCelebration(ach, taskName) {
+  const overlay = document.getElementById('celebration-overlay');
+  document.getElementById('ach-emoji').textContent = ach.emoji;
+  document.getElementById('ach-name').textContent = ach.name;
+  document.getElementById('ach-task').textContent = `"${taskName}"`;
+  spawnConfetti();
+  overlay.style.display='flex';
+  playSound();
+}
+function closeCelebration() {
+  document.getElementById('celebration-overlay').style.display='none';
+  document.getElementById('confetti-container').innerHTML='';
+}
+function spawnConfetti() {
+  const container = document.getElementById('confetti-container');
+  container.innerHTML='';
+  const colors=['#7c6af7','#ff3b30','#ffd60a','#30d158','#ff9f0a','#a78bfa','#ff6b9d'];
+  for (let i=0;i<60;i++) {
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    p.style.cssText=`left:${Math.random()*100}%;top:-10px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${1.2+Math.random()*2}s;animation-delay:${Math.random()*0.8}s;transform:rotate(${Math.random()*360}deg);width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>0.5?'50%':'2px'}`;
+    container.appendChild(p);
+  }
+}
+function playSound() {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [[523,0],[659,0.12],[784,0.24],[1047,0.36]].forEach(([freq,delay])=>{
+      const osc=ctx.createOscillator(), gain=ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value=freq; osc.type='sine';
+      gain.gain.setValueAtTime(0.15,ctx.currentTime+delay);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+0.3);
+      osc.start(ctx.currentTime+delay); osc.stop(ctx.currentTime+delay+0.3);
+    });
+  } catch(e) {}
+}
+
+// ─── MODO FOCO ────────────────────────────────────────────────────────────────
+function enterFocusMode() {
+  const activeTasks = tasks.filter(t=>!t.done);
+  if (!activeTasks.length) { alert('¡No tenés tareas pendientes!'); return; }
+  const order={urgent:0,important:1,normal:2};
+  activeTasks.sort((a,b)=>{
+    const pa=getPriority(a.deadline), pb=getPriority(b.deadline);
+    if(order[pa]!==order[pb]) return order[pa]-order[pb];
+    return new Date(a.deadline)-new Date(b.deadline);
+  });
+  const t = activeTasks[0];
+  focusTaskId = t.id;
+  renderFocusCard(t);
+  document.getElementById('focus-overlay').style.display='flex';
+}
+
+function renderFocusCard(t) {
+  const priority = getPriority(t.deadline);
+  const dotEl = document.getElementById('focus-dot');
+  dotEl.style.background = priority==='urgent'?'var(--red)':priority==='important'?'var(--yellow)':'var(--gray)';
+  dotEl.style.boxShadow = priority==='urgent'?'0 0 16px rgba(255,59,48,0.6)':'none';
+  document.getElementById('focus-name').textContent = t.name;
+  document.getElementById('focus-desc').textContent = t.desc||'';
+  document.getElementById('focus-deadline').textContent = `📅 ${fmtDate(t.deadline)} · ${timeLeft(t.deadline)}`;
+  document.getElementById('focus-est').textContent = t.estimate?`⏱ Estimado: ${t.estimate}`:'';
+  const subs = t.subtasks||[];
+  document.getElementById('focus-subtasks').innerHTML = subs.length ? subs.map((s,i)=>`
+    <div class="subtask-row">
+      <div class="subtask-check ${s.done?'done-sub':''}" onclick="toggleSubtask('${t.id}',${i})"></div>
+      <span class="subtask-text ${s.done?'done-sub':''}">${escHtml(s.text)}</span>
+    </div>`).join('') : '';
+}
+
+function focusComplete() {
+  if (!focusTaskId) return;
+  openCompleteModal(focusTaskId);
+  closeFocus();
+}
+function closeFocus() {
+  document.getElementById('focus-overlay').style.display='none';
+  focusTaskId=null;
+}
+
+// ─── PICK RANDOM ─────────────────────────────────────────────────────────────
+function pickRandom() {
+  const urgent = tasks.filter(t=>!t.done && getPriority(t.deadline)==='urgent');
+  const pool = urgent.length ? urgent : tasks.filter(t=>!t.done);
+  if (!pool.length) { alert('¡No tenés tareas pendientes!'); return; }
+  const t = pool[Math.floor(Math.random()*pool.length)];
+  const card = document.getElementById('card-'+t.id);
+  if (card) {
+    card.scrollIntoView({behavior:'smooth',block:'center'});
+    card.style.outline='2px solid var(--accent)';
+    card.style.outlineOffset='3px';
+    setTimeout(()=>{ card.style.outline=''; card.style.outlineOffset=''; },2500);
+  }
+}
+
+// ─── MODAL HELPERS ────────────────────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+function closeOnOverlay(e,id) { if(e.target===document.getElementById(id)) closeModal(id); }
+
+// ─── NOTIFICATIONS ───────────────────────────────────────────────────────────
+function requestNotifications() {
+  if ('Notification' in window && Notification.permission==='default') Notification.requestPermission();
+}
+function checkNotifications() {
+  if (!('Notification' in window) || Notification.permission!=='granted') return;
+  tasks.filter(t=>!t.done).forEach(t=>{
+    const diffH=(new Date(t.deadline)-new Date())/3600000;
+    if (diffH>0 && diffH<=2) {
+      const key='notif_'+t.id+'_2h';
+      if (!sessionStorage.getItem(key)) {
+        new Notification('⚡ Kondo — Tarea urgente', { body:`"${t.name}" vence en menos de 2 horas`, icon:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2224%22 font-size=%2224%22>🎯</text></svg>' });
+        sessionStorage.setItem(key,'1');
+      }
+    }
+  });
+}
+
+// ─── EXPORT / IMPORT ─────────────────────────────────────────────────────────
+function exportData() {
+  const data = {
+    tasks: K.tasks,
+    projects: K.projects,
+    completedTasks: K.done,
+    trophies: K.trophies,
+    streakData: K.streak,
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `kondo-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (confirm(`¿Importar datos? Esto reemplazará todo lo actual.\n\nEl backup tiene:\n• ${(data.tasks||[]).length} tareas pendientes\n• ${(data.completedTasks||data.done||[]).length} tareas completadas\n• ${(data.trophies||[]).length} logros`)) {
+        K.tasks = data.tasks || [];
+        K.projects = data.projects || [];
+        K.done = data.completedTasks || data.done || [];
+        K.trophies = data.trophies || [];
+        K.streak = data.streakData || data.streak || { days:0, lastDate:'' };
+        save();
+        renderStreak();
+        renderBoard();
+        renderHistory();
+        alert('✅ Datos importados correctamente.');
+      }
+    } catch(err) {
+      alert('Error al leer el archivo. Asegurate de que sea un backup válido de Kondo.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ─── AUTO-REFRESH ─────────────────────────────────────────────────────────────
+setInterval(()=>{
+  if (document.getElementById('tab-board').style.display!=='none') renderBoard();
+  checkNotifications();
+}, 60000);
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderStreak();
+renderBoard();
+requestNotifications();
+
+// Keyboard: ESC closes focus
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeFocus(); });
+</script>
+</body>
+</html>
