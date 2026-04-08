@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kondo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0b0c10;
+  --surface: #13141a;
+  --surface2: #1a1c25;
+  --border: #272a36;
+  --text: #e8eaf0;
+  --dim: #6b7089;
+  --red: #ff3b30;
+  --red-bg: rgba(255,59,48,0.09);
+  --red-border: rgba(255,59,48,0.28);
+  --yellow: #ffd60a;
+  --yellow-bg: rgba(255,214,10,0.07);
+  --yellow-border: rgba(255,214,10,0.22);
+  --gray-bg: rgba(58,63,82,0.25);
+  --gray-border: rgba(58,63,82,0.45);
+  --green: #30d158;
+  --accent: #7c6af7;
+  --accent2: #a78bfa;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px; border-bottom: 1px solid var(--border);
+  background: var(--surface); position: sticky; top: 0; z-index: 100;
+  gap: 12px; flex-wrap: wrap;
+}
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; letter-spacing: -1px; }
+.logo span { color: var(--accent2); }
+.tabs { display: flex; gap: 5px; }
+.tab-btn {
+  padding: 7px 16px; border-radius: 8px; border: none;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; background: transparent; color: var(--dim);
+}
+.tab-btn.active { background: var(--accent); color: #fff; }
+.tab-btn:hover:not(.active) { background: var(--surface2); color: var(--text); }
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #6b59e8; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
+
+.main { padding: 24px 28px; max-width: 900px; margin: 0 auto; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.board-actions { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+.task-list { display: flex; flex-direction: column; gap: 10px; }
+
+.section-label {
+  font-family: 'Syne', sans-serif; font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim);
+  padding: 8px 0 4px; margin-top: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-count { font-size: 0.66rem; padding: 1px 7px; border-radius: 10px; background: var(--surface2); color: var(--dim); }
+
+.task-card {
+  border-radius: 12px; padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
+  border: 1px solid; transition: transform 0.2s, box-shadow 0.2s;
+  animation: slideIn 0.25s ease;
+}
+@keyframes slideIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+.task-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.task-card.urgent { background: var(--red-bg); border-color: var(--red-border); }
+.task-card.important { background: var(--yellow-bg); border-color: var(--yellow-border); }
+.task-card.normal { background: var(--gray-bg); border-color: var(--gray-border); }
+
+.priority-bar { width: 4px; min-height: 40px; border-radius: 4px; flex-shrink: 0; }
+.urgent .priority-bar { background: var(--red); box-shadow: 0 0 10px rgba(255,59,48,0.4); }
+.important .priority-bar { background: var(--yellow); }
+.normal .priority-bar { background: #3a3f52; }
+
+.task-body { flex: 1; min-width: 0; }
+.task-name { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.93rem; margin-bottom: 4px; }
+.task-meta { display: flex; align-items: center; gap: 10px; font-size: 0.75rem; color: var(--dim); flex-wrap: wrap; }
+.priority-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.urgent .priority-badge { background: rgba(255,59,48,0.15); color: var(--red); }
+.important .priority-badge { background: rgba(255,214,10,0.12); color: var(--yellow); }
+.normal .priority-badge { background: rgba(58,63,82,0.4); color: var(--dim); }
+
+.task-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.action-btn {
+  width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--dim); font-size: 0.8rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.action-btn:hover { background: var(--border); color: var(--text); }
+.complete-btn {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid;
+  background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0; font-size: 0.85rem; font-weight: 700;
+}
+.urgent .complete-btn { border-color: var(--red); color: var(--red); }
+.urgent .complete-btn:hover { background: rgba(255,59,48,0.15); transform: scale(1.1); }
+.important .complete-btn { border-color: var(--yellow); color: var(--yellow); }
+.important .complete-btn:hover { background: rgba(255,214,10,0.1); transform: scale(1.1); }
+.normal .complete-btn { border-color: #3a3f52; color: var(--dim); }
+.normal .complete-btn:hover { background: rgba(58,63,82,0.3); transform: scale(1.1); }
+
+.history-list { display: flex; flex-direction: column; gap: 10px; }
+.history-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px;
+  display: flex; gap: 12px; align-items: flex-start;
+  animation: slideIn 0.25s ease;
+}
+.history-check { color: var(--green); font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+.history-body { flex: 1; }
+.history-name { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+.history-meta { font-size: 0.75rem; color: var(--dim); display: flex; gap: 12px; flex-wrap: wrap; }
+.history-badge { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; font-size: 0.78rem; background: rgba(124,106,247,0.1); border: 1px solid rgba(124,106,247,0.2); border-radius: 8px; padding: 3px 10px; color: var(--accent2); }
+
+.gallery-header { font-family:'Syne',sans-serif; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--dim); margin-bottom:16px; }
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+.trophy-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 12px; text-align: center;
+  animation: popIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+  transition: transform 0.2s;
+}
+.trophy-card:hover { transform: translateY(-3px); }
+@keyframes popIn { from { opacity:0; transform:scale(0.7); } to { opacity:1; transform:scale(1); } }
+.trophy-emoji { font-size: 2.2rem; display: block; margin-bottom: 8px; }
+.trophy-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.7rem; color: var(--accent2); margin-bottom: 3px; }
+.trophy-task { font-size: 0.65rem; color: var(--dim); line-height: 1.3; }
+.trophy-count { font-size: 0.62rem; margin-top: 3px; color: var(--dim); }
+
+.empty { text-align: center; padding: 60px 20px; color: var(--dim); }
+.empty-icon { font-size: 2.4rem; margin-bottom: 12px; }
+.empty-title { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+.empty-desc { font-size: 0.8rem; }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; backdrop-filter: blur(5px);
+}
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 26px; width: 100%; max-width: 460px;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 18px; }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 0.75rem; color: var(--dim); margin-bottom: 5px; display: block; font-weight: 500; }
+.form-input {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 12px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.86rem; outline: none; transition: border-color 0.2s;
+}
+.form-input:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+.logro-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+}
+.logro-card {
+  background: var(--surface); border: 1px solid var(--accent);
+  border-radius: 20px; padding: 32px 40px; text-align: center;
+  box-shadow: 0 0 60px rgba(124,106,247,0.25);
+  animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+  max-width: 320px; width: 90%;
+}
+.logro-emoji { font-size: 3.5rem; display: block; margin-bottom: 10px; }
+.logro-label { font-size: 0.68rem; letter-spacing: 2px; color: var(--accent2); font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+.logro-nombre { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
+.logro-tarea { font-size: 0.82rem; color: var(--dim); margin-bottom: 20px; line-height: 1.4; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+@media (max-width: 600px) {
+  header { padding: 12px 14px; }
+  .main { padding: 16px 14px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>Kon</span>do</div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('board')">📋 Tablero</button>
+    <button class="tab-btn" onclick="switchTab('history')">✅ Historial</button>
+    <button class="tab-btn" onclick="switchTab('gallery')">🏆 Logros</button>
+  </div>
+  <button class="btn btn-primary" onclick="abrirModalTarea()">＋ Tarea</button>
+</header>
+
+<div class="main">
+  <div id="tab-board" class="tab-content active">
+    <div id="task-list" class="task-list"></div>
+  </div>
+  <div id="tab-history" class="tab-content">
+    <div id="history-list" class="history-list"></div>
+  </div>
+  <div id="tab-gallery" class="tab-content">
+    <div id="gallery-content"></div>
+  </div>
+</div>
+
+<!-- MODAL TAREA -->
+<div class="modal-overlay" id="modal-tarea" style="display:none">
+  <div class="modal">
+    <div class="modal-title" id="modal-tarea-titulo">Nueva Tarea</div>
+    <div class="form-group">
+      <label class="form-label">Nombre *</label>
+      <input class="form-input" id="t-nombre" placeholder="Ej: Preparar presentación"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha límite *</label>
+      <input class="form-input" id="t-fecha" type="datetime-local"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-tarea')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarTarea()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMPLETAR -->
+<div class="modal-overlay" id="modal-completar" style="display:none">
+  <div class="modal">
+    <div class="modal-title">✅ Completar tarea</div>
+    <div style="background:var(--surface2);border-radius:8px;padding:11px 13px;margin-bottom:18px;border-left:3px solid var(--green);">
+      <div style="font-weight:600;font-size:0.88rem" id="cm-nombre"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha de completado *</label>
+      <input class="form-input" id="cm-fecha" type="datetime-local"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-completar')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarCompletar()" style="background:var(--green)">Confirmar ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGRO POPUP -->
+<div class="logro-overlay" id="logro-overlay" style="display:none">
+  <div class="logro-card">
+    <span class="logro-emoji" id="logro-emoji"></span>
+    <div class="logro-label">¡Logro desbloqueado!</div>
+    <div class="logro-nombre" id="logro-nombre"></div>
+    <div class="logro-tarea" id="logro-tarea"></div>
+    <button class="btn btn-primary" onclick="cerrarLogro()">¡Genial! 🎉</button>
+  </div>
+</div>
+
+<script>
+var LOGROS = [
+  { emoji:'🐣', nombre:'Pollito Valiente', desc:'Primera tarea completada.' },
+  { emoji:'🐢', nombre:'Paso a Paso', desc:'Constancia es poder.' },
+  { emoji:'🦋', nombre:'Metamorfosis', desc:'Transformaste caos en calma.' },
+  { emoji:'🌸', nombre:'Hanami', desc:'Floreciste en medio del trabajo.' },
+  { emoji:'🐉', nombre:'Ryusei', desc:'Velocidad y fuego al completar lo urgente.' },
+  { emoji:'🦊', nombre:'Kitsune', desc:'Astucia para terminar lo difícil.' },
+  { emoji:'🌙', nombre:'Tsuki', desc:'Lo lograste.' },
+  { emoji:'⚡', nombre:'Raijin', desc:'Rayo de productividad.' },
+  { emoji:'🌊', nombre:'Nami', desc:'Fluiste con las tareas como el agua.' },
+  { emoji:'🐼', nombre:'Panda Guerrero', desc:'Ternura y determinación.' },
+  { emoji:'🦄', nombre:'Kirin Magico', desc:'Lograste algo que parecía imposible.' },
+  { emoji:'🌟', nombre:'Hoshi', desc:'Brillas con luz propia.' },
+  { emoji:'🐸', nombre:'Kaeru Tenaz', desc:'Saltaste todos los obstáculos.' },
+  { emoji:'🍀', nombre:'Clover', desc:'La suerte la hiciste vos.' },
+  { emoji:'🏔', nombre:'Fuji', desc:'Cima alcanzada.' },
+  { emoji:'🐠', nombre:'Nemo Libre', desc:'Escapaste de la lista de pendientes.' },
+  { emoji:'🌈', nombre:'Niji', desc:'Después del caos, tu arcoiris.' },
+  { emoji:'👺', nombre:'Oni Domado', desc:'Le ganaste a lo urgente.' },
+  { emoji:'🐯', nombre:'Tora Feroz', desc:'Sin miedo ante el deadline.' },
+  { emoji:'🔮', nombre:'Tama Magica', desc:'Predijiste que podías, y tenías razón.' },
+];
+
+var APP = {
+  tareas:    [],
+  historial: [],
+  trofeos:   [],
+  editandoId:    null,
+  completandoId: null,
+};
+
+function cargarDatos() {
+  try { APP.tareas    = JSON.parse(localStorage.getItem('kondo_tareas')    || '[]'); } catch(e) { APP.tareas = []; }
+  try { APP.historial = JSON.parse(localStorage.getItem('kondo_historial') || '[]'); } catch(e) { APP.historial = []; }
+  try { APP.trofeos   = JSON.parse(localStorage.getItem('kondo_trofeos')   || '[]'); } catch(e) { APP.trofeos = []; }
+}
+
+function guardarDatos() {
+  localStorage.setItem('kondo_tareas',    JSON.stringify(APP.tareas));
+  localStorage.setItem('kondo_historial', JSON.stringify(APP.historial));
+  localStorage.setItem('kondo_trofeos',   JSON.stringify(APP.trofeos));
+}
+
+function getPrioridad(fecha) {
+  var diff = (new Date(fecha) - new Date()) / 3600000;
+  if (diff < 0)    return 'urgent';
+  if (diff <= 48)  return 'urgent';
+  if (diff <= 168) return 'important';
+  return 'normal';
+}
+
+function tiempoRestante(fecha) {
+  var diff = new Date(fecha) - new Date();
+  if (diff < 0) return 'Vencida';
+  var h = Math.floor(diff / 3600000);
+  if (h < 24) return h + 'h restantes';
+  var d = Math.floor(h / 24);
+  if (d < 7) return d + 'd restantes';
+  return Math.floor(d/7) + ' sem restantes';
+}
+
+function fmtFecha(iso) {
+  return new Date(iso).toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(btn, i) {
+    btn.classList.toggle('active', ['board','history','gallery'][i] === tab);
+  });
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'board')   renderTablero();
+  if (tab === 'history') renderHistorial();
+  if (tab === 'gallery') renderGaleria();
+}
+
+function renderTablero() {
+  var lista = document.getElementById('task-list');
+  var activas = APP.tareas.slice().sort(function(a, b) {
+    var orden = { urgent:0, important:1, normal:2 };
+    var pa = getPrioridad(a.fecha), pb = getPrioridad(b.fecha);
+    if (orden[pa] !== orden[pb]) return orden[pa] - orden[pb];
+    return new Date(a.fecha) - new Date(b.fecha);
+  });
+
+  if (activas.length === 0) {
+    lista.innerHTML = '<div class="empty"><div class="empty-icon">🎯</div><div class="empty-title">Sin tareas pendientes</div><div class="empty-desc">Presioná "+ Tarea" para agregar una.</div></div>';
+    return;
+  }
+
+  var grupos = [
+    { key:'urgent',    label:'Urgente',       items: activas.filter(function(t){ return getPrioridad(t.fecha)==='urgent'; }) },
+    { key:'important', label:'Importante',    items: activas.filter(function(t){ return getPrioridad(t.fecha)==='important'; }) },
+    { key:'normal',    label:'Puede esperar', items: activas.filter(function(t){ return getPrioridad(t.fecha)==='normal'; }) },
+  ];
+
+  var html = '';
+  grupos.forEach(function(g) {
+    if (g.items.length === 0) return;
+    html += '<div class="section-label">' + (g.key==='urgent'?'🔴':g.key==='important'?'🟡':'⚫') + ' ' + g.label + ' <span class="section-count">' + g.items.length + '</span></div>';
+    g.items.forEach(function(t) {
+      var p = getPrioridad(t.fecha);
+      var labels = { urgent:'Urgente', important:'Importante', normal:'Normal' };
+      html += '<div class="task-card ' + p + '">' +
+        '<div class="priority-bar"></div>' +
+        '<div class="task-body">' +
+          '<div class="task-name">' + esc(t.nombre) + '</div>' +
+          '<div class="task-meta">' +
+            '<span class="priority-badge">' + labels[p] + '</span>' +
+            '<span>📅 ' + fmtFecha(t.fecha) + '</span>' +
+            '<span>' + tiempoRestante(t.fecha) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="task-actions">' +
+          '<button class="action-btn" onclick="abrirEditarTarea(\'' + t.id + '\')">✏️</button>' +
+          '<button class="action-btn" onclick="eliminarTarea(\'' + t.id + '\')">🗑️</button>' +
+          '<button class="complete-btn" onclick="abrirModalCompletar(\'' + t.id + '\')">✓</button>' +
+        '</div>' +
+      '</div>';
+    });
+  });
+  lista.innerHTML = html;
+}
+
+function renderHistorial() {
+  var lista = document.getElementById('history-list');
+  if (APP.historial.length === 0) {
+    lista.innerHTML = '<div class="empty"><div class="empty-icon">📂</div><div class="empty-title">Historial vacío</div><div class="empty-desc">Las tareas completadas aparecerán aquí.</div></div>';
+    return;
+  }
+  var ordenado = APP.historial.slice().reverse();
+  var html = '';
+  ordenado.forEach(function(h) {
+    var trofeo = null;
+    for (var i = 0; i < APP.trofeos.length; i++) {
+      if (APP.trofeos[i].historialId === h.id) { trofeo = APP.trofeos[i]; break; }
+    }
+    html += '<div class="history-card">' +
+      '<div class="history-check">✅</div>' +
+      '<div class="history-body">' +
+        '<div class="history-name">' + esc(h.nombre) + '</div>' +
+        '<div class="history-meta">' +
+          '<span>📅 Límite: ' + fmtFecha(h.fecha) + '</span>' +
+          '<span>✔ Completada: ' + fmtFecha(h.completadaEn) + '</span>' +
+        '</div>' +
+        (trofeo ? '<div class="history-badge">' + trofeo.emoji + ' ' + esc(trofeo.nombre) + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  });
+  lista.innerHTML = html;
+}
+
+function renderGaleria() {
+  var gc = document.getElementById('gallery-content');
+  if (APP.trofeos.length === 0) {
+    gc.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div><div class="empty-title">Galería vacía</div><div class="empty-desc">Completá tareas para desbloquear logros.</div></div>';
+    return;
+  }
+  var conteos = {};
+  var vistos = {};
+  var unicos = [];
+  APP.trofeos.forEach(function(tr) {
+    conteos[tr.nombre] = (conteos[tr.nombre]||0) + 1;
+  });
+  APP.trofeos.forEach(function(tr) {
+    if (!vistos[tr.nombre]) {
+      vistos[tr.nombre] = true;
+      unicos.push({ emoji:tr.emoji, nombre:tr.nombre, desc:tr.desc, count:conteos[tr.nombre] });
+    }
+  });
+  var html = '<div class="gallery-header">🏆 GALERÍA DE LOGROS · ' + APP.trofeos.length + ' obtenidos</div><div class="gallery-grid">';
+  unicos.forEach(function(tr) {
+    html += '<div class="trophy-card"><span class="trophy-emoji">' + tr.emoji + '</span><div class="trophy-name">' + esc(tr.nombre) + '</div><div class="trophy-task">' + esc(tr.desc) + '</div>' + (tr.count > 1 ? '<div class="trophy-count">x' + tr.count + '</div>' : '') + '</div>';
+  });
+  html += '</div>';
+  gc.innerHTML = html;
+}
+
+function abrirModalTarea() {
+  APP.editandoId = null;
+  document.getElementById('modal-tarea-titulo').textContent = 'Nueva Tarea';
+  document.getElementById('t-nombre').value = '';
+  document.getElementById('t-fecha').value = '';
+  document.getElementById('modal-tarea').style.display = 'flex';
+  setTimeout(function(){ document.getElementById('t-nombre').focus(); }, 100);
+}
+
+function abrirEditarTarea(id) {
+  var t = null;
+  for (var i = 0; i < APP.tareas.length; i++) { if (APP.tareas[i].id === id) { t = APP.tareas[i]; break; } }
+  if (!t) return;
+  APP.editandoId = id;
+  document.getElementById('modal-tarea-titulo').textContent = 'Editar Tarea';
+  document.getElementById('t-nombre').value = t.nombre;
+  document.getElementById('t-fecha').value = t.fecha ? t.fecha.slice(0,16) : '';
+  document.getElementById('modal-tarea').style.display = 'flex';
+}
+
+function guardarTarea() {
+  var nombre = document.getElementById('t-nombre').value.trim();
+  var fecha  = document.getElementById('t-fecha').value;
+  if (!nombre || !fecha) { alert('Completá el nombre y la fecha límite.'); return; }
+  if (APP.editandoId) {
+    for (var i = 0; i < APP.tareas.length; i++) {
+      if (APP.tareas[i].id === APP.editandoId) { APP.tareas[i].nombre = nombre; APP.tareas[i].fecha = fecha; break; }
+    }
+  } else {
+    APP.tareas.push({ id: Date.now().toString(), nombre: nombre, fecha: fecha });
+  }
+  guardarDatos();
+  cerrarModal('modal-tarea');
+  renderTablero();
+}
+
+function eliminarTarea(id) {
+  if (!confirm('Eliminar esta tarea?')) return;
+  APP.tareas = APP.tareas.filter(function(t){ return t.id !== id; });
+  guardarDatos();
+  renderTablero();
+}
+
+function abrirModalCompletar(id) {
+  var t = null;
+  for (var i = 0; i < APP.tareas.length; i++) { if (APP.tareas[i].id === id) { t = APP.tareas[i]; break; } }
+  if (!t) return;
+  APP.completandoId = id;
+  document.getElementById('cm-nombre').textContent = t.nombre;
+  var ahora = new Date();
+  document.getElementById('cm-fecha').value = new Date(ahora - ahora.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('modal-completar').style.display = 'flex';
+}
+
+function confirmarCompletar() {
+  var fechaComp = document.getElementById('cm-fecha').value;
+  if (!fechaComp) { alert('Ingresá la fecha de completado.'); return; }
+
+  var t = null;
+  for (var i = 0; i < APP.tareas.length; i++) { if (APP.tareas[i].id === APP.completandoId) { t = APP.tareas[i]; break; } }
+  if (!t) { cerrarModal('modal-completar'); return; }
+
+  var histId = Date.now().toString();
+
+  APP.historial.push({ id: histId, nombre: t.nombre, fecha: t.fecha, completadaEn: fechaComp });
+  APP.tareas = APP.tareas.filter(function(x){ return x.id !== APP.completandoId; });
+
+  var logro = LOGROS[Math.floor(Math.random() * LOGROS.length)];
+  APP.trofeos.push({ emoji: logro.emoji, nombre: logro.nombre, desc: logro.desc, historialId: histId, obtenidoEn: fechaComp });
+
+  guardarDatos();
+  cerrarModal('modal-completar');
+  renderTablero();
+  mostrarLogro(logro, t.nombre);
+}
+
+function mostrarLogro(logro, nombreTarea) {
+  document.getElementById('logro-emoji').textContent = logro.emoji;
+  document.getElementById('logro-nombre').textContent = logro.nombre;
+  document.getElementById('logro-tarea').textContent = 'Completaste: "' + nombreTarea + '"';
+  document.getElementById('logro-overlay').style.display = 'flex';
+}
+
+function cerrarLogro() {
+  document.getElementById('logro-overlay').style.display = 'none';
+}
+
+function cerrarModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+cargarDatos();
+renderTablero();
+</script>
+</body>
+</html>
